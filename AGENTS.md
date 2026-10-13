@@ -49,15 +49,25 @@ Backend API على **.NET 10** (Onion Architecture + CQRS + Rich Domain Model).
 
 ## Git — Ask Before Every Command
 
-الوكيل مسموح له بتنفيذ أوامر Git (init, add, commit, push, status, ...)،
+الوكيل مسموح له بتنفيذ أوامر Git (init, add, commit, push, status, branch, checkout, merge, ...)،
 **لكن يجب أن يطلب موافقة المستخدم قبل كل أمر دون استثناء.**
 لا تنفذ أي أمر Git تلقائياً. اعرض الأمر وسببه، وانتظر الموافقة.
+
+**قواعد الفروع:**
+
+- كل مهمة (MS-XXX) تُنفَّذ في فرع خاص: `feature/MS-XXX-<short-description>`.
+- مثال: `feature/MS-006-project-references`.
+- لا تعمل على `main` مباشرة بعد الآن.
+- بعد اكتمال المهمة والتحقق من معايير القبول، اسأل المستخدم: هل يريد الدمج في `main` أم فتح Pull Request؟
+- لا تدمج تلقائياً. انتظر قرار المستخدم.
+- احذف الفرع بعد الدمج (إذا وافق المستخدم).
 
 **قواعد الـ commits:**
 
 - استخدم Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`).
 - Commit واحد لكل وحدة عمل منطقية، وليس لكل ملف.
 - لا ترفع إلى GitHub إلا بعد تأكيد المستخدم.
+- عند Commit مهمة كاملة، اذكر رقمها في الرسالة: `feat: MS-008 — dependency injection setup`.
 
 ## Work Order
 
