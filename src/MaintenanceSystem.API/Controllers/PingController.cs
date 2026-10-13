@@ -1,3 +1,4 @@
+using MaintenanceSystem.API.Contracts.System;
 using MaintenanceSystem.Application.Features.System.Ping;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,8 @@ public class PingController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Ping(CancellationToken cancellationToken)
     {
-        var response = await _sender.Send(new PingQuery(), cancellationToken);
+        var result = await _sender.Send(new PingQuery(), cancellationToken);
+        var response = new PingResponse(result.Message, result.TimestampUtc);
         return Ok(response);
     }
 }

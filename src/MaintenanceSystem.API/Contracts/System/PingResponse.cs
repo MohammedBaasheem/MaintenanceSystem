@@ -1,4 +1,4 @@
-namespace MaintenanceSystem.Application.Features.System.Ping;
+namespace MaintenanceSystem.API.Contracts.System;
 
 public sealed record PingResponse(string Message, DateTime TimestampUtc);
 
