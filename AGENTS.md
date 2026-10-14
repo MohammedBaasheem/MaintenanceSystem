@@ -120,3 +120,37 @@ Backend API على **.NET 10** (Onion Architecture + CQRS + Rich Domain Model).
 - لا تقرأ أي ملف من .gemini/ على الإطلاق.
 - استخدم stdout من الأوامر مباشرة، أو اطبع النتائج في نهاية السكريبت.
 - إذا احتجت قيمة سابقة، أعد توليدها أو اسأل المستخدم.
+
+## Report Format (Token Efficiency)
+
+بعد تنفيذ أي مهمة، اعرض تقريراً موجزاً فقط. لا تنسخ الكود الكامل.
+
+**الصيغة المطلوبة:**
+
+### Files Changed
+
+- [path]: [1-2 سطر وصف]
+- [path]: [1-2 سطر وصف]
+
+### Key Code Snippets (only if non-obvious)
+
+- [path]:[line]: [3-5 سطر توضيحي]
+
+### Changes Summary
+
+- [1-3 نقاط عن التغييرات الجوهرية]
+
+### Build Status
+
+- dotnet build: [نجح / فشل - N error]
+
+### Deviations from Plan
+
+- [إن وُجد]
+
+**⛔ لا تنسخ:**
+
+- الكود الكامل لأي ملف.
+- الملفات التي لم تتغير.
+- DTOs متشابهة (استخدم "مطابق لـ X مع الحقول: ...").
+- Configurations كاملة (اكتب "X Configuration مضاف مع: [ملخص]").

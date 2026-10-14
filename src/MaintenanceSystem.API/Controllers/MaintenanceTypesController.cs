@@ -3,6 +3,7 @@ using MaintenanceSystem.API.Contracts.MaintenanceTypes;
 using MaintenanceSystem.Application.Features.MaintenanceTypes.ActivateMaintenanceType;
 using MaintenanceSystem.Application.Features.MaintenanceTypes.CreateMaintenanceType;
 using MaintenanceSystem.Application.Features.MaintenanceTypes.DeactivateMaintenanceType;
+using MaintenanceSystem.Application.Features.MaintenanceTypes.GetActiveMaintenanceTypes;
 using MaintenanceSystem.Application.Features.MaintenanceTypes.UpdateMaintenanceType;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -12,7 +13,7 @@ namespace MaintenanceSystem.API.Controllers;
 
 [ApiController]
 [Route("api/maintenance-types")]
-[Authorize(Policy = Policies.MaintenanceAdminOnly)]
+[Authorize]
 public class MaintenanceTypesController : ControllerBase
 {
     private readonly ISender _sender;
@@ -22,7 +23,23 @@ public class MaintenanceTypesController : ControllerBase
         _sender = sender;
     }
 
+    [HttpGet("active")]
+    public async Task<IActionResult> GetActive(CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(new GetActiveMaintenanceTypesQuery(), cancellationToken);
+
+        var response = result.Select(t => new MaintenanceTypeResponse(
+            t.Id,
+            t.Name,
+            t.Description,
+            t.IsActive,
+            t.CreatedAtUtc));
+
+        return Ok(response);
+    }
+
     [HttpPost]
+    [Authorize(Policy = Policies.MaintenanceAdminOnly)]
     public async Task<IActionResult> Create([FromBody] CreateMaintenanceTypeRequest request, CancellationToken cancellationToken)
     {
         var result = await _sender.Send(
@@ -38,6 +55,7 @@ public class MaintenanceTypesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = Policies.MaintenanceAdminOnly)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateMaintenanceTypeRequest request, CancellationToken cancellationToken)
     {
         var result = await _sender.Send(
@@ -53,6 +71,7 @@ public class MaintenanceTypesController : ControllerBase
     }
 
     [HttpPatch("{id:guid}/activate")]
+    [Authorize(Policy = Policies.MaintenanceAdminOnly)]
     public async Task<IActionResult> Activate(Guid id, CancellationToken cancellationToken)
     {
         await _sender.Send(new ActivateMaintenanceTypeCommand(id), cancellationToken);
@@ -60,6 +79,7 @@ public class MaintenanceTypesController : ControllerBase
     }
 
     [HttpPatch("{id:guid}/deactivate")]
+    [Authorize(Policy = Policies.MaintenanceAdminOnly)]
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken cancellationToken)
     {
         await _sender.Send(new DeactivateMaintenanceTypeCommand(id), cancellationToken);
