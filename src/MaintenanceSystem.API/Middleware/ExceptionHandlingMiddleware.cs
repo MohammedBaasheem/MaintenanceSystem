@@ -1,16 +1,19 @@
-using System.Text.Json;
 using FluentValidation;
 using MaintenanceSystem.Application.Common.Exceptions;
+using MaintenanceSystem.Domain.Exceptions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MaintenanceSystem.API.Middleware;
 
 public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
-    public ExceptionHandlingMiddleware(RequestDelegate next)
+    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
     {
         _next = next;
+        _logger = logger;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -19,66 +22,142 @@ public class ExceptionHandlingMiddleware
         {
             await _next(context);
         }
-        catch (UnauthorizedException ex)
-        {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            var response = new { message = ex.Message };
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
-        }
-        catch (LockedException ex)
-        {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = StatusCodes.Status423Locked;
-            var response = new { message = ex.Message };
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
-        }
         catch (ValidationException ex)
         {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            var response = new
+            var validationErrors = ex.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(e => e.ErrorMessage).ToArray());
+
+            var problemDetails = new ProblemDetails
             {
-                message = "Validation failed.",
-                errors = ex.Errors.Select(e => new { property = e.PropertyName, error = e.ErrorMessage })
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Validation Error",
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                Detail = "One or more validation errors occurred.",
+                Instance = context.Request.Path.Value
             };
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+            problemDetails.Extensions["validationErrors"] = validationErrors;
+
+            await WriteProblemDetailsAsync(context, problemDetails);
+        }
+        catch (InvalidStateTransitionException ex)
+        {
+            await WriteProblemDetailsAsync(context, new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Invalid State Transition",
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                Detail = ex.Message,
+                Instance = context.Request.Path.Value
+            });
+        }
+        catch (BusinessRuleViolationException ex)
+        {
+            await WriteProblemDetailsAsync(context, new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Business Rule Violation",
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                Detail = ex.Message,
+                Instance = context.Request.Path.Value
+            });
+        }
+        catch (DomainException ex)
+        {
+            await WriteProblemDetailsAsync(context, new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Domain Error",
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                Detail = ex.Message,
+                Instance = context.Request.Path.Value
+            });
         }
         catch (NotFoundException ex)
         {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            var response = new { message = ex.Message };
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+            await WriteProblemDetailsAsync(context, new ProblemDetails
+            {
+                Status = StatusCodes.Status404NotFound,
+                Title = "Not Found",
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.4",
+                Detail = ex.Message,
+                Instance = context.Request.Path.Value
+            });
         }
         catch (ForbiddenException ex)
         {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            var response = new { message = ex.Message };
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+            await WriteProblemDetailsAsync(context, new ProblemDetails
+            {
+                Status = StatusCodes.Status403Forbidden,
+                Title = "Forbidden",
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.3",
+                Detail = ex.Message,
+                Instance = context.Request.Path.Value
+            });
+        }
+        catch (UnauthorizedException ex)
+        {
+            await WriteProblemDetailsAsync(context, new ProblemDetails
+            {
+                Status = StatusCodes.Status401Unauthorized,
+                Title = "Unauthorized",
+                Type = "https://tools.ietf.org/html/rfc7235#section-3.1",
+                Detail = ex.Message,
+                Instance = context.Request.Path.Value
+            });
         }
         catch (ConflictException ex)
         {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = StatusCodes.Status409Conflict;
-            var response = new { message = ex.Message };
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+            await WriteProblemDetailsAsync(context, new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Conflict",
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.8",
+                Detail = ex.Message,
+                Instance = context.Request.Path.Value
+            });
         }
-        catch (Domain.Exceptions.BusinessRuleViolationException ex)
+        catch (LockedException ex)
         {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            var response = new { message = ex.Message };
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+            await WriteProblemDetailsAsync(context, new ProblemDetails
+            {
+                Status = StatusCodes.Status423Locked,
+                Title = "Locked",
+                Type = "https://tools.ietf.org/html/rfc4918#section-11.2",
+                Detail = ex.Message,
+                Instance = context.Request.Path.Value
+            });
         }
-        catch (Domain.Exceptions.InvalidStateTransitionException ex)
+        catch (Exception ex)
         {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            var response = new { message = ex.Message };
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+            _logger.LogError(ex, "An unhandled exception occurred while processing request {Path}", context.Request.Path);
+
+            await WriteProblemDetailsAsync(context, new ProblemDetails
+            {
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "Internal Server Error",
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+                Detail = "An unexpected error occurred. Please try again later.",
+                Instance = context.Request.Path.Value
+            });
         }
     }
+
+    private static async Task WriteProblemDetailsAsync(HttpContext context, ProblemDetails problemDetails)
+    {
+        if (context.Response.HasStarted)
+        {
+            return;
+        }
+
+        context.Response.StatusCode = problemDetails.Status ?? StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/problem+json";
+
+        await context.Response.WriteAsJsonAsync(problemDetails, options: null, contentType: "application/problem+json");
+    }
 }
+
+
 
