@@ -1,0 +1,165 @@
+@baseUrl = http://localhost:5188
+@adminToken = your_admin_token_here
+@employeeToken = your_employee_token_here
+@technicianToken = your_technician_token_here
+@maintenanceTypeId = 00000000-0000-0000-0000-000000000000
+@maintenanceRequestId = 00000000-0000-0000-0000-000000000000
+@userId = 00000000-0000-0000-0000-000000000000
+@technicianId = 00000000-0000-0000-0000-000000000000
+
+### 1. Auth — Login as Admin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "userName": "admin",
+  "password": "your_admin_password_here"
+}
+
+### 2. Auth — Login as Employee
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "userName": "employee",
+  "password": "your_employee_password_here"
+}
+
+### 3. Auth — Login as Technician
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "userName": "technician",
+  "password": "your_technician_password_here"
+}
+
+### 4. Auth — Login with Invalid Credentials (Expected 401)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "userName": "admin",
+  "password": "invalid_password"
+}
+
+### 5. Users — Create New User (Admin Only)
+POST {{baseUrl}}/api/users
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "userName": "newuser",
+  "email": "newuser@system.local",
+  "role": "Employee"
+}
+
+### 6. Users — Update User Status / Deactivate (Admin Only)
+PATCH {{baseUrl}}/api/users/{{userId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+### 7. Users — Reset User Password (Admin Only)
+PATCH {{baseUrl}}/api/users/{{userId}}/reset-password
+Authorization: Bearer {{adminToken}}
+
+### 8. Users — Update User Role (Admin Only)
+PATCH {{baseUrl}}/api/users/{{userId}}/roles
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "role": "Technician"
+}
+
+### 9. Maintenance Types — Get Active Types (Authenticated)
+GET {{baseUrl}}/api/maintenance-types/active
+Authorization: Bearer {{employeeToken}}
+
+### 10. Maintenance Types — Create New Type (Admin Only)
+POST {{baseUrl}}/api/maintenance-types
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Electrical Systems",
+  "description": "Wiring, panels, lighting and power outlets repair"
+}
+
+### 11. Maintenance Types — Update Type (Admin Only)
+PUT {{baseUrl}}/api/maintenance-types/{{maintenanceTypeId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Electrical & Lighting Systems",
+  "description": "Comprehensive electrical and lighting fixtures repair"
+}
+
+### 12. Maintenance Types — Activate Type (Admin Only)
+PATCH {{baseUrl}}/api/maintenance-types/{{maintenanceTypeId}}/activate
+Authorization: Bearer {{adminToken}}
+
+### 13. Maintenance Types — Deactivate Type (Admin Only)
+PATCH {{baseUrl}}/api/maintenance-types/{{maintenanceTypeId}}/deactivate
+Authorization: Bearer {{adminToken}}
+
+### 14. Maintenance Requests — Create Request (Employee)
+POST {{baseUrl}}/api/maintenance-requests
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "title": "Broken AC Unit in Room 204",
+  "description": "The air conditioner is leaking water and not cooling properly",
+  "priority": 2,
+  "maintenanceTypeId": "{{maintenanceTypeId}}"
+}
+
+### 15. Maintenance Requests — Get My Requests (Employee)
+GET {{baseUrl}}/api/maintenance-requests/my?page=1&pageSize=10
+Authorization: Bearer {{employeeToken}}
+
+### 16. Maintenance Requests — Get Request By Id
+GET {{baseUrl}}/api/maintenance-requests/{{maintenanceRequestId}}
+Authorization: Bearer {{employeeToken}}
+
+### 17. Maintenance Requests — Get Assigned Requests (Technician / Admin)
+GET {{baseUrl}}/api/maintenance-requests/assigned?page=1&pageSize=10
+Authorization: Bearer {{technicianToken}}
+
+### 18. Maintenance Requests — Assign Technician (Admin Only)
+PATCH {{baseUrl}}/api/maintenance-requests/{{maintenanceRequestId}}/assign
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "technicianId": "{{technicianId}}"
+}
+
+### 19. Maintenance Requests — Update Status (Technician / Admin)
+PATCH {{baseUrl}}/api/maintenance-requests/{{maintenanceRequestId}}/status
+Authorization: Bearer {{technicianToken}}
+Content-Type: application/json
+
+{
+  "newStatus": 2
+}
+
+### 20. Maintenance Requests — Reject Request (Admin Only)
+PATCH {{baseUrl}}/api/maintenance-requests/{{maintenanceRequestId}}/reject
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "reason": "Outside standard facility maintenance scope."
+}
+
+### 21. Maintenance Requests — Get All Requests with Filters (Admin Only)
+GET {{baseUrl}}/api/maintenance-requests?page=1&pageSize=10
+Authorization: Bearer {{adminToken}}
+
