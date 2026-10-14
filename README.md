@@ -1,77 +1,77 @@
 # Maintenance Request Management System
 
-نظام متكامل لإدارة ومتابعة طلبات الصيانة التشغيلية داخل المنشآت، يتيح تقديم الطلبات، إسنادها للفنيين المختصين، وتتبع دورة حياة الطلب خطوة بخطوة حتى الإغلاق وفق حوكمة وصلاحيات صارمة.
+A robust and secure enterprise Backend API for managing and tracking facility maintenance requests. It enables employees to submit requests, maintenance administrators to manage types and assign technicians, and technicians to update request lifecycles through resolution and closure with strict domain validation and role-based access control.
 
 ---
 
-## 1. فكرة المشروع والأدوار
+## 1. Project Overview & Roles
 
-يعتمد النظام على نموذج صلاحيات مخصص يوزع المسؤوليات على ثلاثة أدوار رئيسية:
+The system uses a custom role-based permission model with three distinct operational roles:
 
-* **الموظف (Employee):** تقديم طلبات الصيانة وتتبع حالتها واستعراض طلباته الخاصة.
-* **الفني (Technician):** استعراض الطلبات المسندة إليه، وبدء العمل عليها، وإشعار الإنجاز بحلها.
-* **مسؤول الصيانة (MaintenanceAdmin):** إدارة أنواع الصيانة وتفعيلها/تعطيلها، إسناد الطلبات للفنيين، إدارة المستخدمين وحالاتهم، ورفض أو إغلاق الطلبات.
-
----
-
-## 2. التقنيات المستخدمة
-
-* **منصة التطوير:** C# / .NET 10 (C# 13)
-* **واجهة برمجة التطبيقات:** ASP.NET Core Web API (Controllers)
-* **نمط التصميم:** Onion Architecture مع CQRS عبر مكتبة MediatR
-* **قواعد البيانات:** SQL Server (LocalDB) مع Entity Framework Core Code-First Migrations
-* **التخزين المؤقت:** Redis (عبر Memurai على نظام Windows) مع StackExchange.Redis
-* **المصادقة والتفويض:** نظام مصادقة مخصص بالكامل (Custom Auth)، تشفير BCrypt.Net-Next، وتوكنات JWT Bearer مع Guid v7
-* **التحقق من البيانات:** FluentValidation مع MediatR Pipeline Behaviors
-* **هيكلة الأخطاء:** معيار RFC 7807 المشتق عبر ProblemDetails
+* **Employee:** Submits maintenance requests, tracks their lifecycle, and views personal request history.
+* **Technician:** Views assigned maintenance requests, initiates work, and marks requests as resolved.
+* **MaintenanceAdmin:** Manages maintenance types (create, update, activate, deactivate), assigns requests to technicians, manages users and account status, and rejects or closes requests.
 
 ---
 
-## 3. المعمارية البرمجية
+## 2. Tech Stack
 
-يتبع المشروع معمارية البصلة (Onion Architecture) مقسماً إلى أربعة مشاريع مع اعتماديات تتجه من الخارج إلى الداخل:
-
-* **MaintenanceSystem.Domain:** قلب النظام ويحتوي الكيانات (Rich Domain Model)، الدوال السلوكية، وقواعد العمل دون أي اعتماديات خارجية.
-* **MaintenanceSystem.Application:** تنسيق حالات الاستخدام عبر Commands/Queries (Vertical Slice)، والواجهات المجردة (Abstractions).
-* **MaintenanceSystem.Infrastructure:** التفاصيل التقنية وتنفيذ الواجهات (EF Core DbContext، التشفير بـ BCrypt، خدمة JWT، والتخزين المؤقت Redis).
-* **MaintenanceSystem.API:** نقطة الدخول واستقبال طلبات HTTP، تحويل الـ Contracts إلى Commands/Queries، وتطبيق الـ Middlewares.
-
-للمزيد من التفاصيل المعمارية، راجع: [الدليل المعماري للمشروع](docs/architecture-guide.md).
-
----
-
-## 4. قرار نظام المصادقة المخصص (Custom Auth)
-
-تم اتخاذ قرار معماري معتمد بعدم استخدام ASP.NET Core Identity أو جداول `AspNet*` مسبقة الصنع:
-* **جداول مخصصة:** `Users` و `Roles` و `UserRoles` بمفاتيح تسلسلية متوافقة مع Guid v7.
-* **تشفير كلمات المرور:** باستخدام خوارزمية BCrypt بمعامل تشغيل (Work Factor = 11).
-* **سياسة القفل (Lockout Policy):** قفل الحساب تلقائياً لمدة 15 دقيقة بعد 5 محاولات دخول فاشلة متتالية.
-* **إبطال التوكنات فورياً (SecurityStamp):** كل توكن يحمل ختم أمان، ويتم التحقق منه عند كل طلب؛ في حال تعديل الدور أو كلمة المرور أو تعطيل المستخدم يتغير الختم وتبطل التوكنات القديمة فوراً.
-
-للاطلاع على القرار المعماري بالكامل، راجع: [وثيقة ADR-0001: Custom Authentication](docs/adr/0001-custom-auth.md).
+* **Runtime & Framework:** C# / .NET 10 (C# 13)
+* **API Style:** ASP.NET Core Web API (Controllers)
+* **Architecture:** Onion Architecture with CQRS via MediatR
+* **Persistence:** SQL Server (LocalDB) with Entity Framework Core Code-First Migrations
+* **Caching:** Redis (Memurai on Windows) with StackExchange.Redis
+* **Security & Auth:** Custom Authentication (No ASP.NET Core Identity), BCrypt.Net-Next hashing, JWT Bearer tokens with sequential Guid v7 primary keys
+* **Validation:** FluentValidation with MediatR Pipeline ValidationBehavior
+* **Error Handling:** RFC 7807 ProblemDetails standard error responses
 
 ---
 
-## 5. متطلبات التشغيل
+## 3. Architecture
+
+The solution strictly follows Onion Architecture, organized into four clean layers with dependencies pointing inward:
+
+* **MaintenanceSystem.Domain:** Core enterprise domain containing entities (Rich Domain Model), behavior methods, business invariants, and domain exceptions with zero external dependencies.
+* **MaintenanceSystem.Application:** Application use-case orchestration organized by vertical slices (Commands/Queries), MediatR handlers, and abstraction interfaces.
+* **MaintenanceSystem.Infrastructure:** Technical implementation of interfaces (EF Core AppDbContext, BCrypt password hashing, JWT token service, and Redis caching).
+* **MaintenanceSystem.API:** HTTP entry point, controller routing, request contract mapping, and middleware pipeline.
+
+For detailed architectural guidelines and rules, refer to: [Architecture Guide](docs/architecture-guide.md).
+
+---
+
+## 4. Custom Authentication Decision
+
+The project explicitly implements a custom authentication system rather than relying on ASP.NET Core Identity or pre-packaged `AspNet*` tables:
+* **Custom Schema:** `Users`, `Roles`, and `UserRoles` tables with sequential Guid v7 primary keys.
+* **Password Hashing:** BCrypt algorithm with a documented Work Factor of 11.
+* **Lockout Policy:** Accounts are locked for 15 minutes after 5 consecutive failed login attempts.
+* **Immediate Token Revocation (SecurityStamp):** Every token includes a security stamp claim validated on every request. Updating passwords, changing roles, or deactivating accounts immediately revokes existing tokens.
+
+For the architectural decision rationale, refer to: [ADR-0001: Custom Authentication](docs/adr/0001-custom-auth.md).
+
+---
+
+## 5. Prerequisites
 
 * [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-* SQL Server LocalDB أو SQL Server Express
-* Memurai Developer Edition (Redis لنظام Windows) مشغل على المنفذ الافتراضي `127.0.0.1:6379`
-* موجه أوامر PowerShell أو Visual Studio 2026 / VS Code
+* SQL Server LocalDB or SQL Server Express
+* Memurai Developer Edition (Redis for Windows) running on default port `127.0.0.1:6379`
+* PowerShell or Visual Studio 2026 / VS Code
 
 ---
 
-## 6. خطوات التشغيل والإعداد
+## 6. Setup & Getting Started
 
-### 1. استنساخ المستودع واستعادة الحزم
+### 1. Clone Repository & Restore Dependencies
 ```bash
 git clone https://github.com/MohammedBaasheem/MaintenanceSystem.git
 cd MaintenanceSystem
 dotnet restore
 ```
 
-### 2. تهيئة أسرار التطوير (User Secrets)
-يتم تخزين مفتاح توقيع JWT وكلمات مرور الحسابات الأولية داخل User Secrets:
+### 2. Configure Development User Secrets
+Configure the JWT signing key and initial seed passwords in User Secrets:
 ```bash
 cd src/MaintenanceSystem.API
 dotnet user-secrets set "Jwt:SigningKey" "YOUR_SUPER_SECRET_SIGNING_KEY_AT_LEAST_64_CHARS_LONG_HERE"
@@ -81,34 +81,34 @@ dotnet user-secrets set "Seed:TechnicianPassword" "YourTechnicianPasswordHere123
 cd ../..
 ```
 
-### 3. تطبيق تهجيرات قاعدة البيانات (Migrations)
+### 3. Apply Database Migrations
 ```bash
 dotnet ef database update --project src/MaintenanceSystem.Infrastructure --startup-project src/MaintenanceSystem.API
 ```
 
-### 4. تشغيل خادم التطوير
+### 4. Run the API Application
 ```bash
 dotnet run --project src/MaintenanceSystem.API
 ```
-سيعمل الـ API افتراضياً على: `http://localhost:5188`.
+The API listens by default on: `http://localhost:5188`.
 
 ---
 
-## 7. حسابات بيئة التطوير
+## 7. Development Accounts
 
-يقوم مكوّن `DevelopmentDataSeeder` تلقائياً بإنشاء الحسابات الأولية التالية عند أول تشغيل في بيئة التطوير (Development):
+The `DevelopmentDataSeeder` automatically creates the following initial accounts upon first run in the `Development` environment:
 
-| اسم المستخدم (UserName) | البريد الإلكتروني | الدور الأساسي | مفتاح كلمة المرور في User Secrets |
-|:-----------------------|:------------------|:-------------|:-----------------------------------|
+| Username | Email | Role | Password Secret Key |
+|:---------|:------|:-----|:--------------------|
 | `admin` | `admin@system.local` | `MaintenanceAdmin` | `Seed:AdminPassword` |
 | `employee` | `employee@system.local` | `Employee` | `Seed:EmployeePassword` |
 | `technician` | `technician@system.local` | `Technician` | `Seed:TechnicianPassword` |
 
 ---
 
-## 8. أمثلة الـ API
+## 8. API Examples
 
-### تسجيل الدخول (POST /api/auth/login)
+### Login (POST /api/auth/login)
 ```http
 POST /api/auth/login
 Content-Type: application/json
@@ -118,7 +118,7 @@ Content-Type: application/json
   "password": "YourAdminPasswordHere123!"
 }
 ```
-**الاستجابة الناجحة (200 OK):**
+**Response (200 OK):**
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -126,27 +126,27 @@ Content-Type: application/json
 }
 ```
 
-### إنشاء نوع صيانة جديد (POST /api/maintenance-types)
+### Create Maintenance Type (POST /api/maintenance-types)
 ```http
 POST /api/maintenance-types
 Authorization: Bearer <AdminToken>
 Content-Type: application/json
 
 {
-  "name": "أنظمة التكييف والتبريد",
-  "description": "صيانة وإصلاح وحدات التبريد والتكييف المركزي والسبليت"
+  "name": "HVAC Systems",
+  "description": "Heating, ventilation, and air conditioning repair and servicing"
 }
 ```
 
-### تقديم طلب صيانة (POST /api/maintenance-requests)
+### Create Maintenance Request (POST /api/maintenance-requests)
 ```http
 POST /api/maintenance-requests
 Authorization: Bearer <EmployeeToken>
 Content-Type: application/json
 
 {
-  "title": "عطل في مكيف المكتب رقم 302",
-  "description": "تسريب مياه مع انخفاض كفاءة التبريد",
+  "title": "AC unit leaking in Room 302",
+  "description": "Water leakage observed and cooling performance is reduced",
   "priority": 2,
   "maintenanceTypeId": "019273c5-9271-7000-8000-000000000001"
 }
@@ -154,20 +154,19 @@ Content-Type: application/json
 
 ---
 
-## 9. اختبارات الـ HTTP
+## 9. HTTP Requests Collection
 
-يتضمن المشروع ملف اختبارات تفاعلي شامل مخصص لملحق **VS Code REST Client** يغطي أكثر من 20 سيناريو:
-* مسار الملف: [`requests/maintenance.http`](requests/maintenance.http)
-* يغطي اختبارات تسجيل الدخول، إدارة المستخدمين، إدارة أنواع الصيانة، دورة حياة الطلبات كاملة، وحالات التحقق ورفض الصلاحيات (401، 403، 404، 409، 423).
+A comprehensive interactive HTTP test collection for the **VS Code REST Client** extension is provided:
+* File path: [`requests/maintenance.http`](requests/maintenance.http)
+* Covers over 20 end-to-end scenarios including authentication, user management, maintenance types, full request lifecycles, and error responses (401, 403, 404, 409, 423).
 
 ---
 
-## 10. الوثائق المرجعية
+## 10. References & Documentation
 
-للاطلاع على التوثيق الفني الكامل والتفاصيل المعمارية:
-1. [الدليل المعماري (Architecture Guide)](docs/architecture-guide.md): شرح شجرة المشاريع وقواعد الطبقات ومسار تدفق العمليات.
-2. [تصميم قاعدة البيانات (Database Design)](docs/database-design.md): قاموس البيانات الكامل ومخطط الجداول والفهارس.
-3. [القرار المعماري للمصادقة (ADR-0001: Custom Auth)](docs/adr/0001-custom-auth.md): حيثيات وتفاصيل تصميم نظام المصادقة المخصص.
-4. [قائمة اختبارات القبول (Acceptance Checklist)](docs/acceptance-checklist.md): نتائج الاختبارات الحرجة وسيناريوهات الصمود وقفل الحسابات.
-5. [خطة التطوير الشاملة (Development Plan)](docs/development-plan.md): الخطة المرجعية لجميع مراحل ومهام بناء النظام.
-
+For technical specifications and architectural documentation:
+1. [Architecture Guide](docs/architecture-guide.md): Project tree structure, layering boundaries, and flow of execution.
+2. [Database Design](docs/database-design.md): Complete data dictionary, schema diagrams, and indexing strategy.
+3. [ADR-0001: Custom Auth](docs/adr/0001-custom-auth.md): Architectural decision record for the custom authentication system.
+4. [Acceptance Checklist](docs/acceptance-checklist.md): Critical acceptance scenarios, lockout testing, and resilience results.
+5. [Development Plan](docs/development-plan.md): Step-by-step master development plan for all project milestones.
