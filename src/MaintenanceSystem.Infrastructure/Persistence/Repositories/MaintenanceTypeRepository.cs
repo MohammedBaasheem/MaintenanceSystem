@@ -35,6 +35,13 @@ public class MaintenanceTypeRepository : IMaintenanceTypeRepository
             .AnyAsync(m => m.Name == trimmedName, cancellationToken);
     }
 
+    public async Task<bool> ExistsByNameExceptIdAsync(string name, Guid id, CancellationToken cancellationToken = default)
+    {
+        var trimmedName = name.Trim();
+        return await _context.MaintenanceTypes
+            .AnyAsync(m => m.Name == trimmedName && m.Id != id, cancellationToken);
+    }
+
     public async Task AddAsync(MaintenanceType maintenanceType, CancellationToken cancellationToken = default)
     {
         await _context.MaintenanceTypes.AddAsync(maintenanceType, cancellationToken);
