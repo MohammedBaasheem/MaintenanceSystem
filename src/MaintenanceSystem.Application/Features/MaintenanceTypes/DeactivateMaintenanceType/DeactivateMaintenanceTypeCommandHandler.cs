@@ -1,16 +1,25 @@
+using MaintenanceSystem.Application.Abstractions.Caching;
 using MaintenanceSystem.Application.Abstractions.Persistence;
 using MaintenanceSystem.Application.Common.Exceptions;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace MaintenanceSystem.Application.Features.MaintenanceTypes.DeactivateMaintenanceType;
 
 public class DeactivateMaintenanceTypeCommandHandler : IRequestHandler<DeactivateMaintenanceTypeCommand>
 {
     private readonly IMaintenanceTypeRepository _maintenanceTypeRepository;
+    private readonly IMaintenanceTypeCache _maintenanceTypeCache;
+    private readonly ILogger<DeactivateMaintenanceTypeCommandHandler> _logger;
 
-    public DeactivateMaintenanceTypeCommandHandler(IMaintenanceTypeRepository maintenanceTypeRepository)
+    public DeactivateMaintenanceTypeCommandHandler(
+        IMaintenanceTypeRepository maintenanceTypeRepository,
+        IMaintenanceTypeCache maintenanceTypeCache,
+        ILogger<DeactivateMaintenanceTypeCommandHandler> logger)
     {
         _maintenanceTypeRepository = maintenanceTypeRepository;
+        _maintenanceTypeCache = maintenanceTypeCache;
+        _logger = logger;
     }
 
     public async Task Handle(DeactivateMaintenanceTypeCommand request, CancellationToken cancellationToken)
@@ -24,6 +33,15 @@ public class DeactivateMaintenanceTypeCommandHandler : IRequestHandler<Deactivat
         maintenanceType.Deactivate();
 
         await _maintenanceTypeRepository.UpdateAsync(maintenanceType, cancellationToken);
+
+        try
+        {
+            await _maintenanceTypeCache.InvalidateAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to invalidate maintenance types cache.");
+        }
     }
 }
 
