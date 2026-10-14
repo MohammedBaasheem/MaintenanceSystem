@@ -22,6 +22,88 @@ namespace MaintenanceSystem.Infrastructure.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("MaintenanceSystem.Domain.Entities.MaintenanceRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<DateTime?>("AssignedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("AssignedTechnicianId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ClosedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid>("MaintenanceTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("ResolvedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignedTechnicianId")
+                        .HasDatabaseName("IX_MaintenanceRequests_AssignedTechnicianId");
+
+                    b.HasIndex("CreatedByUserId")
+                        .HasDatabaseName("IX_MaintenanceRequests_CreatedByUserId");
+
+                    b.HasIndex("MaintenanceTypeId")
+                        .HasDatabaseName("IX_MaintenanceRequests_MaintenanceTypeId");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_MaintenanceRequests_Status");
+
+                    b.HasIndex("Status", "AssignedTechnicianId")
+                        .HasDatabaseName("IX_MaintenanceRequests_Status_AssignedTechnicianId");
+
+                    b.ToTable("MaintenanceRequests", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_MaintenanceRequests_Description", "LEN([Description]) > 0");
+
+                            t.HasCheckConstraint("CK_MaintenanceRequests_Priority", "[Priority] BETWEEN 0 AND 3");
+
+                            t.HasCheckConstraint("CK_MaintenanceRequests_Status", "[Status] BETWEEN 0 AND 5");
+
+                            t.HasCheckConstraint("CK_MaintenanceRequests_Title", "LEN([Title]) > 0");
+                        });
+                });
+
             modelBuilder.Entity("MaintenanceSystem.Domain.Entities.MaintenanceType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -166,6 +248,26 @@ namespace MaintenanceSystem.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("IX_UserRoles_RoleId");
 
                     b.ToTable("UserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("MaintenanceSystem.Domain.Entities.MaintenanceRequest", b =>
+                {
+                    b.HasOne("MaintenanceSystem.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedTechnicianId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MaintenanceSystem.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MaintenanceSystem.Domain.Entities.MaintenanceType", null)
+                        .WithMany()
+                        .HasForeignKey("MaintenanceTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MaintenanceSystem.Domain.Entities.UserRole", b =>
