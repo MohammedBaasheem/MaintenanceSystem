@@ -17,9 +17,9 @@ public class PingController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> Ping(CancellationToken cancellationToken)
+    public async Task<IActionResult> Ping([FromQuery] string? message, CancellationToken cancellationToken)
     {
-        var result = await _sender.Send(new PingQuery(), cancellationToken);
+        var result = await _sender.Send(new PingQuery(message), cancellationToken);
         var response = new PingResponse(result.Message, result.TimestampUtc);
         return Ok(response);
     }

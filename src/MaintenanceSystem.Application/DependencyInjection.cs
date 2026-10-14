@@ -1,4 +1,5 @@
 using FluentValidation;
+using MaintenanceSystem.Application.Common.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MaintenanceSystem.Application;
@@ -10,6 +11,7 @@ public static class DependencyInjection
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
+            cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });
 
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
