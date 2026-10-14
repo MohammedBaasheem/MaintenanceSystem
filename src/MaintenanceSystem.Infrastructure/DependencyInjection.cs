@@ -26,8 +26,13 @@ public static class DependencyInjection
         var redisConnectionString = configuration.GetConnectionString("Redis")
             ?? throw new InvalidOperationException("Connection string 'Redis' not found.");
 
+        var redisOptions = ConfigurationOptions.Parse(redisConnectionString);
+        redisOptions.AbortOnConnectFail = false;
+        redisOptions.ConnectRetry = 1;
+        redisOptions.ConnectTimeout = 5000;
+
         services.AddSingleton<IConnectionMultiplexer>(sp =>
-            ConnectionMultiplexer.Connect(redisConnectionString));
+            ConnectionMultiplexer.Connect(redisOptions));
 
         services.AddSingleton<IMaintenanceTypeCache, RedisMaintenanceTypeCache>();
 
