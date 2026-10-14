@@ -100,3 +100,15 @@ Backend API على **.NET 10** (Onion Architecture + CQRS + Rich Domain Model).
 - لا تقرأ ملفات الإنتاج أثناء الاختبار إلا إذا اكتشفت خطأً فعلياً.
 - عند الانتهاء من الاختبار، احذف كل ملفات السكريبت المؤقتة ومجلد `scratch/`.
 - لا تكرر polling للأوامر الطرفية. الأمر إما نجح أو فشل. تحقق مرة واحدة.
+
+## Scratch Files Policy
+
+- كل الملفات المؤقتة (scripts, hashes, test files) تُوضع في `C:\Temp\`.
+- لا تُنشئ ملفات مؤقتة في جذر المستودع.
+- احذف الملفات المؤقتة بعد كل استخدام.
+
+## Never Read Session Logs
+
+- لا تقرأ ملفات `.gemini/antigravity/brain/**/logs/transcript.jsonl`.
+- لا تقرأ أي ملف من `.gemini/`.
+- إذا احتجت قيمة سابقة، أعد توليدها أو اسأل المستخدم.
