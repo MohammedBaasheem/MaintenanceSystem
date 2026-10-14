@@ -155,7 +155,27 @@ Backend API على **.NET 10** (Onion Architecture + CQRS + Rich Domain Model).
 - DTOs متشابهة (استخدم "مطابق لـ X مع الحقول: ...").
 - Configurations كاملة (اكتب "X Configuration مضاف مع: [ملخص]").
 
+## Report Format — No Code Dumps
+
+عندما يطلب المستخدم ملفاً للمراجعة، لا تنسخ الكود.
+اعرض فقط:
+1. مسار الملف.
+2. وصف في 1-2 سطر.
+3. أرقام الأسطر المهمة (إن لزم).
+
+⛔ لا تنسخ الكود الكامل.
+⛔ لا تستخدم ```csharp.
+⛔ لا تستخدم --- كفواصل.
+
+مثال صحيح:
+src/MaintenanceSystem.Infrastructure/Caching/RedisMaintenanceTypeCache.cs
+- ينفذ IMaintenanceTypeCache باستخدام StackExchange.Redis.
+- Cache Key: "maintenance-types:active:v1"، TTL: 10 دقائق.
+- يستخدم System.Text.Json مع JsonSerializerDefaults.Web.
+- 3 دوال: GetAsync, SetAsync, InvalidateAsync.
+
 ### البنية التحتية المحلية:
 
 - LocalDB: `(localdb)\MSSQLLocalDB` → `MaintenanceSystemDb`.
 - Redis: 127.0.0.1:6379 (Memurai Developer Edition).
+
