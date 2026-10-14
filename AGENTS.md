@@ -179,3 +179,9 @@ src/MaintenanceSystem.Infrastructure/Caching/RedisMaintenanceTypeCache.cs
 - LocalDB: `(localdb)\MSSQLLocalDB` → `MaintenanceSystemDb`.
 - Redis: 127.0.0.1:6379 (Memurai Developer Edition).
 
+## NuGet Security Audit
+
+- بعد كل إضافة حزمة، شغّل `dotnet list package --vulnerable`.
+- إذا وُجدت ثغرات، رقّي الحزمة فوراً.
+- لا تقبل Warnings من نوع NU1902/NU1903.
+
