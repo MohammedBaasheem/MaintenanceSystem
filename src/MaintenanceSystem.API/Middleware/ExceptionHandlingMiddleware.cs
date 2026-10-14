@@ -72,6 +72,13 @@ public class ExceptionHandlingMiddleware
             var response = new { message = ex.Message };
             await context.Response.WriteAsync(JsonSerializer.Serialize(response));
         }
+        catch (Domain.Exceptions.InvalidStateTransitionException ex)
+        {
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            var response = new { message = ex.Message };
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
     }
 }
 

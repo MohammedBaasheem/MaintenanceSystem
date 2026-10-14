@@ -1,6 +1,7 @@
 using MaintenanceSystem.API.Authorization;
 using MaintenanceSystem.API.Contracts.Common;
 using MaintenanceSystem.API.Contracts.MaintenanceRequests;
+using MaintenanceSystem.Application.Features.MaintenanceRequests.AssignTechnician;
 using MaintenanceSystem.Application.Features.MaintenanceRequests.CreateMaintenanceRequest;
 using MaintenanceSystem.Application.Features.MaintenanceRequests.GetAssignedMaintenanceRequests;
 using MaintenanceSystem.Application.Features.MaintenanceRequests.GetMaintenanceRequestById;
@@ -132,6 +133,36 @@ public class MaintenanceRequestsController : ControllerBase
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _sender.Send(new GetMaintenanceRequestByIdQuery(id), cancellationToken);
+
+        var response = new MaintenanceRequestResponse(
+            result.Id,
+            result.Title,
+            result.Description,
+            result.Priority,
+            result.Status,
+            result.MaintenanceTypeId,
+            result.CreatedByUserId,
+            result.AssignedTechnicianId,
+            result.RejectionReason,
+            result.AssignedAtUtc,
+            result.ResolvedAtUtc,
+            result.ClosedAtUtc,
+            result.UpdatedAtUtc,
+            result.CreatedAtUtc);
+
+        return Ok(response);
+    }
+
+    [HttpPatch("{id:guid}/assign")]
+    [Authorize(Policy = Policies.MaintenanceAdminOnly)]
+    public async Task<IActionResult> AssignTechnician(
+        Guid id,
+        [FromBody] AssignTechnicianRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            new AssignTechnicianCommand(id, request.TechnicianId),
+            cancellationToken);
 
         var response = new MaintenanceRequestResponse(
             result.Id,
