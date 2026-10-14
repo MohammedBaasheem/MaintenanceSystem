@@ -1,8 +1,8 @@
+using MaintenanceSystem.API.Authorization;
 using MaintenanceSystem.API.Extensions;
 using MaintenanceSystem.API.Middleware;
 using MaintenanceSystem.Application;
 using MaintenanceSystem.Infrastructure;
-
 using MaintenanceSystem.Infrastructure.Persistence.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddAppAuthorization();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();

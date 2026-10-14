@@ -1,3 +1,4 @@
+using MaintenanceSystem.API.Authorization;
 using MaintenanceSystem.API.Contracts.Users;
 using MaintenanceSystem.Application.Features.Users.CreateUser;
 using MaintenanceSystem.Application.Features.Users.ResetUserPassword;
@@ -11,7 +12,7 @@ namespace MaintenanceSystem.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "MaintenanceAdmin")] // TODO: MS-016 will switch to [Authorize(Policy = ...)]
+[Authorize(Policy = Policies.MaintenanceAdminOnly)]
 public class UsersController : ControllerBase
 {
     private readonly ISender _sender;
