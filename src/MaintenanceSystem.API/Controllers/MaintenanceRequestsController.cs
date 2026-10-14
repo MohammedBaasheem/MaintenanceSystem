@@ -1,6 +1,7 @@
 using MaintenanceSystem.API.Contracts.Common;
 using MaintenanceSystem.API.Contracts.MaintenanceRequests;
 using MaintenanceSystem.Application.Features.MaintenanceRequests.CreateMaintenanceRequest;
+using MaintenanceSystem.Application.Features.MaintenanceRequests.GetMaintenanceRequestById;
 using MaintenanceSystem.Application.Features.MaintenanceRequests.GetMyMaintenanceRequests;
 using MaintenanceSystem.Domain.Enums;
 using MediatR;
@@ -81,6 +82,30 @@ public class MaintenanceRequestsController : ControllerBase
             result.TotalPages,
             result.HasPreviousPage,
             result.HasNextPage);
+
+        return Ok(response);
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(new GetMaintenanceRequestByIdQuery(id), cancellationToken);
+
+        var response = new MaintenanceRequestResponse(
+            result.Id,
+            result.Title,
+            result.Description,
+            result.Priority,
+            result.Status,
+            result.MaintenanceTypeId,
+            result.CreatedByUserId,
+            result.AssignedTechnicianId,
+            result.RejectionReason,
+            result.AssignedAtUtc,
+            result.ResolvedAtUtc,
+            result.ClosedAtUtc,
+            result.UpdatedAtUtc,
+            result.CreatedAtUtc);
 
         return Ok(response);
     }
