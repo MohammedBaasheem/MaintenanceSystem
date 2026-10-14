@@ -6,6 +6,7 @@ using MaintenanceSystem.Application.Features.MaintenanceRequests.CreateMaintenan
 using MaintenanceSystem.Application.Features.MaintenanceRequests.GetAssignedMaintenanceRequests;
 using MaintenanceSystem.Application.Features.MaintenanceRequests.GetMaintenanceRequestById;
 using MaintenanceSystem.Application.Features.MaintenanceRequests.GetMyMaintenanceRequests;
+using MaintenanceSystem.Application.Features.MaintenanceRequests.UpdateMaintenanceRequestStatus;
 using MaintenanceSystem.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -182,5 +183,36 @@ public class MaintenanceRequestsController : ControllerBase
 
         return Ok(response);
     }
+
+    [HttpPatch("{id:guid}/status")]
+    [Authorize(Policy = Policies.TechnicianOrAdmin)]
+    public async Task<IActionResult> UpdateStatus(
+        Guid id,
+        [FromBody] UpdateStatusRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            new UpdateMaintenanceRequestStatusCommand(id, request.NewStatus),
+            cancellationToken);
+
+        var response = new MaintenanceRequestResponse(
+            result.Id,
+            result.Title,
+            result.Description,
+            result.Priority,
+            result.Status,
+            result.MaintenanceTypeId,
+            result.CreatedByUserId,
+            result.AssignedTechnicianId,
+            result.RejectionReason,
+            result.AssignedAtUtc,
+            result.ResolvedAtUtc,
+            result.ClosedAtUtc,
+            result.UpdatedAtUtc,
+            result.CreatedAtUtc);
+
+        return Ok(response);
+    }
 }
+
 
