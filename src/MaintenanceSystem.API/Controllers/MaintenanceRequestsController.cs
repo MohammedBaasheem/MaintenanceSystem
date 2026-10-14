@@ -6,6 +6,7 @@ using MaintenanceSystem.Application.Features.MaintenanceRequests.CreateMaintenan
 using MaintenanceSystem.Application.Features.MaintenanceRequests.GetAssignedMaintenanceRequests;
 using MaintenanceSystem.Application.Features.MaintenanceRequests.GetMaintenanceRequestById;
 using MaintenanceSystem.Application.Features.MaintenanceRequests.GetMyMaintenanceRequests;
+using MaintenanceSystem.Application.Features.MaintenanceRequests.RejectMaintenanceRequest;
 using MaintenanceSystem.Application.Features.MaintenanceRequests.UpdateMaintenanceRequestStatus;
 using MaintenanceSystem.Domain.Enums;
 using MediatR;
@@ -193,6 +194,36 @@ public class MaintenanceRequestsController : ControllerBase
     {
         var result = await _sender.Send(
             new UpdateMaintenanceRequestStatusCommand(id, request.NewStatus),
+            cancellationToken);
+
+        var response = new MaintenanceRequestResponse(
+            result.Id,
+            result.Title,
+            result.Description,
+            result.Priority,
+            result.Status,
+            result.MaintenanceTypeId,
+            result.CreatedByUserId,
+            result.AssignedTechnicianId,
+            result.RejectionReason,
+            result.AssignedAtUtc,
+            result.ResolvedAtUtc,
+            result.ClosedAtUtc,
+            result.UpdatedAtUtc,
+            result.CreatedAtUtc);
+
+        return Ok(response);
+    }
+
+    [HttpPatch("{id:guid}/reject")]
+    [Authorize(Policy = Policies.MaintenanceAdminOnly)]
+    public async Task<IActionResult> Reject(
+        Guid id,
+        [FromBody] RejectRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            new RejectMaintenanceRequestCommand(id, request.Reason),
             cancellationToken);
 
         var response = new MaintenanceRequestResponse(
