@@ -154,3 +154,8 @@ Backend API على **.NET 10** (Onion Architecture + CQRS + Rich Domain Model).
 - الملفات التي لم تتغير.
 - DTOs متشابهة (استخدم "مطابق لـ X مع الحقول: ...").
 - Configurations كاملة (اكتب "X Configuration مضاف مع: [ملخص]").
+
+### البنية التحتية المحلية:
+
+- LocalDB: `(localdb)\MSSQLLocalDB` → `MaintenanceSystemDb`.
+- Redis: 127.0.0.1:6379 (Memurai Developer Edition).
