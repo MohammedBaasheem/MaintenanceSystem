@@ -13,6 +13,12 @@ public interface IMaintenanceRequestRepository
         MaintenanceRequestStatus? status,
         MaintenancePriority? priority,
         CancellationToken cancellationToken = default);
+    Task<(IReadOnlyList<MaintenanceRequest> Items, int TotalCount)> GetAssignedToTechnicianAsync(
+        Guid technicianId,
+        int page,
+        int pageSize,
+        MaintenanceRequestStatus? status,
+        CancellationToken cancellationToken = default);
     Task AddAsync(MaintenanceRequest request, CancellationToken cancellationToken = default);
     Task UpdateAsync(MaintenanceRequest request, CancellationToken cancellationToken = default);
 }
