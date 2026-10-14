@@ -1,5 +1,7 @@
+using MaintenanceSystem.Application.Abstractions.Caching;
 using MaintenanceSystem.Application.Abstractions.Persistence;
 using MaintenanceSystem.Application.Abstractions.Security;
+using MaintenanceSystem.Infrastructure.Caching;
 using MaintenanceSystem.Infrastructure.Persistence;
 using MaintenanceSystem.Infrastructure.Persistence.Repositories;
 using MaintenanceSystem.Infrastructure.Persistence.Seed;
@@ -7,6 +9,7 @@ using MaintenanceSystem.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace MaintenanceSystem.Infrastructure;
 
@@ -19,6 +22,14 @@ public static class DependencyInjection
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(connectionString));
+
+        var redisConnectionString = configuration.GetConnectionString("Redis")
+            ?? throw new InvalidOperationException("Connection string 'Redis' not found.");
+
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
+            ConnectionMultiplexer.Connect(redisConnectionString));
+
+        services.AddSingleton<IMaintenanceTypeCache, RedisMaintenanceTypeCache>();
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
