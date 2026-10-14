@@ -44,6 +44,34 @@ public class ExceptionHandlingMiddleware
             };
             await context.Response.WriteAsync(JsonSerializer.Serialize(response));
         }
+        catch (NotFoundException ex)
+        {
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            var response = new { message = ex.Message };
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
+        catch (ForbiddenException ex)
+        {
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            var response = new { message = ex.Message };
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
+        catch (ConflictException ex)
+        {
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = StatusCodes.Status409Conflict;
+            var response = new { message = ex.Message };
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
+        catch (Domain.Exceptions.BusinessRuleViolationException ex)
+        {
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            var response = new { message = ex.Message };
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
     }
 }
 

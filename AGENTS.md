@@ -112,3 +112,11 @@ Backend API على **.NET 10** (Onion Architecture + CQRS + Rich Domain Model).
 - لا تقرأ ملفات `.gemini/antigravity/brain/**/logs/transcript.jsonl`.
 - لا تقرأ أي ملف من `.gemini/`.
 - إذا احتجت قيمة سابقة، أعد توليدها أو اسأل المستخدم.
+
+## Never Read Session Logs
+
+- لا تقرأ ملفات .gemini/antigravity/brain/\*\*/logs/transcript.jsonl.
+- لا تقرأ أي ملف من .gemini/antigravity/brain/\*_/tasks/_.log.
+- لا تقرأ أي ملف من .gemini/ على الإطلاق.
+- استخدم stdout من الأوامر مباشرة، أو اطبع النتائج في نهاية السكريبت.
+- إذا احتجت قيمة سابقة، أعد توليدها أو اسأل المستخدم.

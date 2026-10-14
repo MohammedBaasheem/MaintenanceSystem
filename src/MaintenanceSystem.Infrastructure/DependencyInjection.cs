@@ -20,6 +20,17 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString));
 
         services.AddScoped<IUserRepository, UserRepository>();
+        ãæÇİŞ Úáì ÇáÇÎÊÈÇÑ.
+
+        ÊĞßíÑ:
+-ÇÓÊÎÏã.ps1 æÇÍÏ İí C:\Temp\.
+-áÇ polling ãßÑÑ.
+-áÇ ÊŞÑÃ transcript.jsonl.
+- ÃæŞİ ÇáÊØÈíŞ æäÙøİ DB ÈÚÏ ÇáÇäÊåÇÁ.
+- ÇÚÑÖ ÊŞÑíÑÇğ ãæÌÒÇğ(Status Code áßá ÓíäÇÑíæ).        services.AddScoped<IRoleRepository, RoleRepository>();
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
 
