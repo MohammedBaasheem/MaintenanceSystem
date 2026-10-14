@@ -80,6 +80,49 @@ public class MaintenanceRequestRepository : IMaintenanceRequestRepository
         return (items, totalCount);
     }
 
+    public async Task<(IReadOnlyList<MaintenanceRequest> Items, int TotalCount)> GetAllAsync(
+        int page,
+        int pageSize,
+        MaintenanceRequestStatus? status,
+        MaintenancePriority? priority,
+        Guid? technicianId,
+        Guid? maintenanceTypeId,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.MaintenanceRequests
+            .AsNoTracking();
+
+        if (status.HasValue)
+        {
+            query = query.Where(r => r.Status == status.Value);
+        }
+
+        if (priority.HasValue)
+        {
+            query = query.Where(r => r.Priority == priority.Value);
+        }
+
+        if (technicianId.HasValue)
+        {
+            query = query.Where(r => r.AssignedTechnicianId == technicianId.Value);
+        }
+
+        if (maintenanceTypeId.HasValue)
+        {
+            query = query.Where(r => r.MaintenanceTypeId == maintenanceTypeId.Value);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(r => r.CreatedAtUtc)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+
     public async Task AddAsync(MaintenanceRequest request, CancellationToken cancellationToken = default)
     {
         await _context.MaintenanceRequests.AddAsync(request, cancellationToken);

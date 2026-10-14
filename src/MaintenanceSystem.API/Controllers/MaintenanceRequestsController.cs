@@ -3,6 +3,7 @@ using MaintenanceSystem.API.Contracts.Common;
 using MaintenanceSystem.API.Contracts.MaintenanceRequests;
 using MaintenanceSystem.Application.Features.MaintenanceRequests.AssignTechnician;
 using MaintenanceSystem.Application.Features.MaintenanceRequests.CreateMaintenanceRequest;
+using MaintenanceSystem.Application.Features.MaintenanceRequests.GetAllMaintenanceRequests;
 using MaintenanceSystem.Application.Features.MaintenanceRequests.GetAssignedMaintenanceRequests;
 using MaintenanceSystem.Application.Features.MaintenanceRequests.GetMaintenanceRequestById;
 using MaintenanceSystem.Application.Features.MaintenanceRequests.GetMyMaintenanceRequests;
@@ -49,6 +50,49 @@ public class MaintenanceRequestsController : ControllerBase
             result.CreatedAtUtc);
 
         return StatusCode(StatusCodes.Status201Created, response);
+    }
+
+    [HttpGet]
+    [Authorize(Policy = Policies.MaintenanceAdminOnly)]
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] MaintenanceRequestStatus? status = null,
+        [FromQuery] MaintenancePriority? priority = null,
+        [FromQuery] Guid? technicianId = null,
+        [FromQuery] Guid? maintenanceTypeId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _sender.Send(
+            new GetAllMaintenanceRequestsQuery(page, pageSize, status, priority, technicianId, maintenanceTypeId),
+            cancellationToken);
+
+        var items = result.Items.Select(r => new MaintenanceRequestResponse(
+            r.Id,
+            r.Title,
+            r.Description,
+            r.Priority,
+            r.Status,
+            r.MaintenanceTypeId,
+            r.CreatedByUserId,
+            r.AssignedTechnicianId,
+            r.RejectionReason,
+            r.AssignedAtUtc,
+            r.ResolvedAtUtc,
+            r.ClosedAtUtc,
+            r.UpdatedAtUtc,
+            r.CreatedAtUtc)).ToList();
+
+        var response = new PagedResponse<MaintenanceRequestResponse>(
+            items,
+            result.Page,
+            result.PageSize,
+            result.TotalCount,
+            result.TotalPages,
+            result.HasPreviousPage,
+            result.HasNextPage);
+
+        return Ok(response);
     }
 
     [HttpGet("my")]
