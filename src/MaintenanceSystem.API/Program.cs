@@ -3,6 +3,8 @@ using MaintenanceSystem.API.Middleware;
 using MaintenanceSystem.Application;
 using MaintenanceSystem.Infrastructure;
 
+using MaintenanceSystem.Infrastructure.Persistence.Seed;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -21,6 +23,10 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    using var scope = app.Services.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<DevelopmentDataSeeder>();
+    await seeder.SeedAsync();
 }
 
 app.UseHttpsRedirection();

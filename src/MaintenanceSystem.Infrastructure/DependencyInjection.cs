@@ -2,6 +2,7 @@ using MaintenanceSystem.Application.Abstractions.Persistence;
 using MaintenanceSystem.Application.Abstractions.Security;
 using MaintenanceSystem.Infrastructure.Persistence;
 using MaintenanceSystem.Infrastructure.Persistence.Repositories;
+using MaintenanceSystem.Infrastructure.Persistence.Seed;
 using MaintenanceSystem.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,19 +21,14 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString));
 
         services.AddScoped<IUserRepository, UserRepository>();
-        „Ê«›ﬁ ⁄·Ï «·«Œ »«—.
-
-         –ﬂÌ—:
--«” Œœ„.ps1 Ê«Õœ ›Ì C:\Temp\.
--·« polling „ﬂ——.
--·«  ﬁ—√ transcript.jsonl.
-- √Êﬁ› «· ÿ»Ìﬁ Ê‰Ÿ¯› DB »⁄œ «·«‰ Â«¡.
-- «⁄—÷  ﬁ—Ì—« „ÊÃ“«(Status Code ·ﬂ· ”Ì‰«—ÌÊ).        services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+
+        services.AddScoped<DevelopmentDataSeeder>();
 
         services.Configure<JwtOptions>(options =>
         {
@@ -59,4 +55,3 @@ public static class DependencyInjection
         return services;
     }
 }
-
