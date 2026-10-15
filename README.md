@@ -92,6 +92,12 @@ dotnet run --project src/MaintenanceSystem.API
 ```
 The API listens by default on: `http://localhost:5188`.
 
+### 5. Run Automated Tests
+```bash
+dotnet test
+```
+Executes 132 automated tests across Domain (68), Application (53), and API Integration (11) layers with isolated SQLite in-memory persistence and zero external service dependencies.
+
 ---
 
 ## 7. Development Accounts
@@ -170,3 +176,4 @@ For technical specifications and architectural documentation:
 3. [ADR-0001: Custom Auth](docs/adr/0001-custom-auth.md): Architectural decision record for the custom authentication system.
 4. [Acceptance Checklist](docs/acceptance-checklist.md): Critical acceptance scenarios, lockout testing, and resilience results.
 5. [Development Plan](docs/development-plan.md): Step-by-step master development plan for all project milestones.
+6. [Final Review Report](docs/final-review.md): Repository review, security audit, and quality gate report.

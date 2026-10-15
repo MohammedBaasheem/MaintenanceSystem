@@ -46,5 +46,28 @@ Review Scope: All projects (Domain, Application, Infrastructure, API), database,
 ## 5. Build Integrity, Documentation, and Git History
 * **Solution Build:** `dotnet build` succeeds cleanly with 0 compilation errors.
 * **Git History:** Commits organized following Conventional Commits format with explicit task ID traceability.
-* **Project Readme (README.md):** Comprehensive English technical documentation covering all 11 sections, prerequisites, sample requests, and architectural links.
 * **Status:** Solution is verified and production-ready for subsequent stages.
+
+---
+
+## 6. Automated Test Suite & Quality Gate (MS-050)
+* **Execution Commands:**
+  - Build: `dotnet build`
+  - Test: `dotnet test`
+  - Vulnerability Audit: `dotnet list package --vulnerable`
+* **Test Suite Metrics:**
+  - Total Tests: 132 (132 Passed, 0 Failed, 0 Skipped).
+  - Domain Unit Tests: 68 tests covering entity invariants, state machines (`MaintenanceRequest`), authentication lockouts (`User`), and catalog management (`MaintenanceType`).
+  - Application Tests: 53 tests covering FluentValidation command validators and MediatR handlers with isolated mock dependencies.
+  - API Integration Tests: 11 tests running on an isolated ASP.NET Core test host with SQLite in-memory persistence and in-memory cache fakes.
+* **Business Rule Coverage Matrix:**
+  - State Transitions & Invariants: Verified (Valid lifecycle transitions, invalid transition rejections, technician reassignment, rejection reasons).
+  - Account Lockout Thresholds: Verified (5 failed login attempts trigger 15-minute lockout, lockout expiration, lockout reset).
+  - Input Validation: Verified (Lengths, empty/whitespace constraints, email formatting, priority enums).
+  - Role Authorization: Verified (Policy enforcement for `MaintenanceAdmin`, `Technician`, and `Employee` across API endpoints).
+* **Known Limitations & Out of Scope:**
+  - No 100% test coverage claim: Coverage targets critical domain invariants, core handlers, validation, and key API paths. Edge queries and auxiliary infrastructure plumbing are not exhaustively covered.
+  - Integration tests run against an in-memory SQLite relational database with custom `LEN` function support rather than a live multi-node SQL Server instance.
+  - Redis distributed caching is replaced with an in-memory test fake during integration tests; clustering, failover, and Redis network resilience are not tested in automated suites.
+  - Performance, stress, and load testing are out of scope for these functional test suites.
+* **Status:** Passed Quality Gate with 0 Errors, 0 Warnings, and 0 Vulnerable packages.
