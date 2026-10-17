@@ -185,3 +185,22 @@ src/MaintenanceSystem.Infrastructure/Caching/RedisMaintenanceTypeCache.cs
 - إذا وُجدت ثغرات، رقّي الحزمة فوراً.
 - لا تقبل Warnings من نوع NU1902/NU1903.
 
+## Learning Docs
+
+- Tasks: docs/learning/TASKS.md
+- Template: docs/learning/TEMPLATE.md
+- Example: docs/learning/flows/01-Login.md
+
+Workflow:
+1. عند "نفذ Task #N":
+2. اقرأ TASKS.md (للمهمة).
+3. اقرأ TEMPLATE.md (للقالب).
+4. ابحث في الأكواد.
+5. اعرض خطة.
+6. انتظر الموافقة.
+7. نفّذ.
+8. اعرض الملف فقط.
+
+⛔ لا تنسخ كوداً كاملاً.
+⛔ اعرض diff فقط.
+
